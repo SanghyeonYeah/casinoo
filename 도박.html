@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>확률 도전 게임 💰</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            position: relative;
+        }
+
+        h1 {
+            text-align: center;
+            color: #1e3c72;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+
+        .rules {
+            background: #fff9e6;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #ffd700;
+        }
+
+        .rules h3 {
+            color: #ff6b35;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .rules ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .rules li {
+            margin-bottom: 5px;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .rules li::before {
+            content: "✓ ";
+            color: #4caf50;
+            font-weight: bold;
+        }
+
+        .money-display {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .money-label {
+            font-size: 1em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .money-amount {
+            font-size: 3em;
+            font-weight: bold;
+            color: #1e3c72;
+        }
+
+        .probability-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .probability-label {
+            font-size: 1em;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .probability-value {
+            font-size: 2.5em;
+            font-weight: bold;
+        }
+
+        .probability-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 5px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+
+        .probability-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50 0%, #ffd700 50%, #ff4757 100%);
+            transition: width 0.5s ease;
+            border-radius: 5px;
+        }
+
+        .next-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 10px;
+        }
+
+        .next-item {
+            text-align: center;
+            flex: 1;
+        }
+
+        .next-label {
+            font-size: 0.8em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .next-value {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #1e3c72;
+        }
+
+        .next-value.success {
+            color: #4caf50;
+        }
+
+        .next-value.fail {
+            color: #ff4757;
+        }
+
+        .main-button {
+            width: 100%;
+            padding: 40px;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            border: none;
+            border-radius: 20px;
+            font-size: 2em;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 30px rgba(17, 153, 142, 0.4);
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .main-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(17, 153, 142, 0.6);
+        }
+
+        .main-button:active {
+            transform: scale(0.95);
+        }
+
+        .main-button.danger {
+            background: linear-gradient(135deg, #ff4757 0%, #ff6348 100%);
+            animation: pulse-danger 1s infinite;
+        }
+
+        @keyframes pulse-danger {
+            0%, 100% {
+                box-shadow: 0 10px 30px rgba(255, 71, 87, 0.4);
+            }
+            50% {
+                box-shadow: 0 10px 40px rgba(255, 71, 87, 0.7);
+            }
+        }
+
+        .stats {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            flex: 1;
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.8em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #1e3c72;
+        }
+
+        .reset-btn {
+            width: 100%;
+            padding: 15px;
+            background: #95a5a6;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+
+        .reset-btn:hover {
+            background: #7f8c8d;
+            transform: translateY(-2px);
+        }
+
+        .result-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            text-align: center;
+            z-index: 1000;
+            transition: all 0.3s;
+        }
+
+        .result-message.show {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .result-message.success {
+            border: 5px solid #4caf50;
+        }
+
+        .result-message.fail {
+            border: 5px solid #ff4757;
+        }
+
+        .result-message.win {
+            border: 5px solid #ffd700;
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+        }
+
+        .result-icon {
+            font-size: 5em;
+            margin-bottom: 20px;
+        }
+
+        .result-text {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .result-subtext {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .result-btn {
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .result-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 999;
+            display: none;
+        }
+
+        .overlay.show {
+            display: block;
+        }
+
+        .history {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .history-title {
+            font-weight: bold;
+            color: #1e3c72;
+            margin-bottom: 10px;
+        }
+
+        .history-item {
+            padding: 8px;
+            margin-bottom: 5px;
+            background: white;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9em;
+        }
+
+        .history-item.success {
+            border-left: 3px solid #4caf50;
+        }
+
+        .history-item.fail {
+            border-left: 3px solid #ff4757;
+        }
+
+        .ad-space {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px dashed #ddd;
+        }
+
+        .ad-space p {
+            color: #999;
+            font-size: 0.9em;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-5deg); }
+            75% { transform: rotate(5deg); }
+        }
+
+        .shake {
+            animation: shake 0.5s;
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay" id="overlay"></div>
+    
+    <div class="result-message" id="resultMessage">
+        <div class="result-icon" id="resultIcon">🎉</div>
+        <div class="result-text" id="resultText">성공!</div>
+        <div class="result-subtext" id="resultSubtext">돈이 두배가 되었습니다!</div>
+        <button class="result-btn" id="resultBtn">계속하기</button>
+    </div>
+
+    <div class="game-container">
+        <h1>🎲 확률 도전 게임</h1>
+        <p class="subtitle">만원을 만들어보세요! 하지만 확률은 점점 낮아집니다...</p>
+
+        <div class="rules">
+            <h3>📜 게임 규칙</h3>
+            <ul>
+                <li>시작 금액: 1원, 성공 확률: 100%</li>
+                <li>성공하면 돈이 2배! 확률은 5% 감소</li>
+                <li>실패하면 모든 돈을 잃고 처음부터!</li>
+                <li>목표: 10,000원 달성!</li>
+            </ul>
+        </div>
+
+        <div class="money-display">
+            <div class="money-label">현재 보유 금액</div>
+            <div class="money-amount" id="moneyAmount">1원</div>
+        </div>
+
+        <div class="probability-display">
+            <div class="probability-label">성공 확률</div>
+            <div class="probability-value" id="probabilityValue">100%</div>
+            <div class="probability-bar">
+                <div class="probability-fill" id="probabilityFill" style="width: 100%"></div>
+            </div>
+        </div>
+
+        <div class="next-info">
+            <div class="next-item">
+                <div class="next-label">성공 시</div>
+                <div class="next-value success" id="successAmount">2원</div>
+            </div>
+            <div class="next-item">
+                <div class="next-label">실패 시</div>
+                <div class="next-value fail">1원 (처음부터)</div>
+            </div>
+        </div>
+
+        <button class="main-button" id="clickBtn">
+            🎰 도전하기! 🎰
+        </button>
+
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-label">총 시도</div>
+                <div class="stat-value" id="totalAttempts">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">성공</div>
+                <div class="stat-value" id="successCount">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">실패</div>
+                <div class="stat-value" id="failCount">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">최고 기록</div>
+                <div class="stat-value" id="bestRecord">1원</div>
+            </div>
+        </div>
+
+        <div class="history">
+            <div class="history-title">📊 최근 기록</div>
+            <div id="historyList"></div>
+        </div>
+
+        <button class="reset-btn" id="resetBtn">🔄 통계 초기화</button>
+
+        <div class="ad-space">
+            <p>💰 광고나 후원으로 수익을 올려보세요!</p>
+        </div>
+    </div>
+
+    <script>
+        let money = 1;
+        let probability = 100;
+        let totalAttempts = 0;
+        let successCount = 0;
+        let failCount = 0;
+        let bestRecord = parseInt(localStorage.getItem('bestRecord')) || 1;
+        const MAX_MONEY = 10000;
+
+        function formatMoney(num) {
+            return num.toLocaleString() + '원';
+        }
+
+        function updateDisplay() {
+            document.getElementById('moneyAmount').textContent = formatMoney(money);
+            document.getElementById('probabilityValue').textContent = probability + '%';
+            document.getElementById('probabilityFill').style.width = probability + '%';
+            document.getElementById('successAmount').textContent = formatMoney(money * 2);
+            document.getElementById('totalAttempts').textContent = totalAttempts;
+            document.getElementById('successCount').textContent = successCount;
+            document.getElementById('failCount').textContent = failCount;
+            document.getElementById('bestRecord').textContent = formatMoney(bestRecord);
+
+            // 버튼 색상 변경 (확률이 낮으면 빨간색)
+            const btn = document.getElementById('clickBtn');
+            if (probability <= 50) {
+                btn.classList.add('danger');
+            } else {
+                btn.classList.remove('danger');
+            }
+        }
+
+        function addToHistory(success, amount, prob) {
+            const historyList = document.getElementById('historyList');
+            const item = document.createElement('div');
+            item.className = 'history-item ' + (success ? 'success' : 'fail');
+            
+            const result = success ? 
+                `✓ 성공: ${formatMoney(amount/2)} → ${formatMoney(amount)}` : 
+                `✗ 실패: ${formatMoney(amount)} → 1원`;
+            
+            item.innerHTML = `
+                <span>${result}</span>
+                <span style="color: #666;">${prob}%</span>
+            `;
+            
+            historyList.insertBefore(item, historyList.firstChild);
+
+            // 최대 10개까지만 표시
+            if (historyList.children.length > 10) {
+                historyList.removeChild(historyList.lastChild);
+            }
+        }
+
+        function showResult(success, won = false) {
+            const overlay = document.getElementById('overlay');
+            const resultMessage = document.getElementById('resultMessage');
+            const resultIcon = document.getElementById('resultIcon');
+            const resultText = document.getElementById('resultText');
+            const resultSubtext = document.getElementById('resultSubtext');
+
+            overlay.classList.add('show');
+            
+            if (won) {
+                resultMessage.className = 'result-message win show';
+                resultIcon.textContent = '🏆';
+                resultText.textContent = '게임 클리어!';
+                resultSubtext.textContent = '축하합니다! 10,000원을 달성했습니다!';
+            } else if (success) {
+                resultMessage.className = 'result-message success show';
+                resultIcon.textContent = '🎉';
+                resultText.textContent = '성공!';
+                resultSubtext.textContent = `${formatMoney(money/2)} → ${formatMoney(money)} (+${formatMoney(money/2)})`;
+            } else {
+                resultMessage.className = 'result-message fail show';
+                resultIcon.textContent = '💥';
+                resultText.textContent = '실패...';
+                resultSubtext.textContent = `${formatMoney(money)}를 잃었습니다. 다시 도전하세요!`;
+            }
+
+            resultMessage.classList.add('show');
+        }
+
+        function closeResult() {
+            document.getElementById('overlay').classList.remove('show');
+            document.getElementById('resultMessage').classList.remove('show');
+        }
+
+        document.getElementById('clickBtn').addEventListener('click', function() {
+            totalAttempts++;
+
+            // 확률 계산
+            const random = Math.random() * 100;
+            const success = random < probability;
+
+            if (success) {
+                // 성공!
+                money *= 2;
+                successCount++;
+                
+                if (money > bestRecord) {
+                    bestRecord = money;
+                    localStorage.setItem('bestRecord', bestRecord);
+                }
+
+                addToHistory(true, money, probability);
+
+                // 만원 달성 체크
+                if (money >= MAX_MONEY) {
+                    showResult(true, true);
+                    // 게임 리셋
+                    setTimeout(() => {
+                        money = 1;
+                        probability = 100;
+                        updateDisplay();
+                    }, 3000);
+                } else {
+                    showResult(true, false);
+                    // 확률 감소
+                    probability = Math.max(5, probability - 5);
+                }
+            } else {
+                // 실패!
+                failCount++;
+                const lostMoney = money;
+                money = 1;
+                probability = 100;
+                
+                addToHistory(false, lostMoney, probability + 5);
+                showResult(false, false);
+            }
+
+            updateDisplay();
+
+            this.classList.add('shake');
+            setTimeout(() => {
+                this.classList.remove('shake');
+            }, 500);
+        });
+
+        document.getElementById('resultBtn').addEventListener('click', closeResult);
+
+        document.getElementById('overlay').addEventListener('click', closeResult);
+
+        document.getElementById('resetBtn').addEventListener('click', function() {
+            if (confirm('통계를 초기화하시겠습니까?')) {
+                totalAttempts = 0;
+                successCount = 0;
+                failCount = 0;
+                document.getElementById('historyList').innerHTML = '';
+                updateDisplay();
+            }
+        });
+
+        updateDisplay();
+    </script>
+</body>
+</html>
